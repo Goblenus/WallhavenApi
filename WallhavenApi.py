@@ -20,29 +20,36 @@ class WallhavenApi:
         return self._make_images_urls(image_numbers)
 
     @staticmethod
+    def _get_images_page_data(categories, purity, resolutions, ratios, sorting, order, page):
+        page_data = requests.get('https://alpha.wallhaven.cc/search', params={"categories": categories,
+                                                                              "purity": purity,
+                                                                              "resolutions": resolutions,
+                                                                              "ratios": ratios,
+                                                                              "sorting": sorting,
+                                                                              "order": order,
+                                                                              "page": page},
+                                 verify=False)
+
+        logging.debug("Page request code %d", page_data.status_code)
+
+        if page_data.status_code != 200:
+            return None
+
+        return page_data
+
+    @staticmethod
     def _get_image_numbers(categories, purity, resolutions, ratios, sorting, order, page):
         logging.debug("Trying obtain image number")
 
-        random_page_data = requests.get('https://alpha.wallhaven.cc/search', params={"categories": categories,
-                                                                                     "purity": purity,
-                                                                                     "resolutions": resolutions,
-                                                                                     "ratios": ratios,
-                                                                                     "sorting": sorting,
-                                                                                     "order": order,
-                                                                                     "page": page},
-                                        verify=False)
+        page_data = WallhavenApi._get_images_page_data(categories, purity, resolutions, ratios, sorting, order, page)
 
-        logging.debug("Random page request code %d", random_page_data.status_code)
-
-        if random_page_data.status_code != 200:
+        if page_data is None:
             return None
 
-        logging.debug("Random page loaded")
-
-        figures_tags = BeautifulSoup(random_page_data.text, "html.parser")\
+        figures_tags = BeautifulSoup(page_data.text, "html.parser")\
             .select("#thumbs > section:nth-of-type(1) > ul > li > figure[data-wallpaper-id]")
 
-        logging.debug("Found %d image tags", len(figures_tags))
+        logging.debug("Found %d images tags", len(figures_tags))
 
         if not len(figures_tags):
             return None

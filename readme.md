@@ -24,17 +24,17 @@ wallhaven_api = WallhavenApi.WallhavenApi(verify_connection=True)
 ---
 ##### `get_pages_count` - get pages count of request
 _Parameters:_
-- category_general {Boolean} - search in General category
-- category_anime {Boolean} - search in Anime category
-- category_people {Boolean} - search in People category
-- purity_sfw {Boolean} - images with sfw purity
-- purity_sketchy {Boolean} - images with sketchy purity
-- purity_nsfw {Boolean} - images with nsfw purity
-- resolutions {String} - string of resolutions (specify a comma, can be empty)
-- ratios {String} - string of ratios (specify a comma, can be empty)
-- sorting {String} - one of this: relevance, random, date_added, views, favorites
-- order {String} - one of this: desc, asc
-- page {Int} - page of images
+* category_general {Boolean} - search in General category
+* category_anime {Boolean} - search in Anime category
+* category_people {Boolean} - search in People category
+* purity_sfw {Boolean} - images with sfw purity
+* purity_sketchy {Boolean} - images with sketchy purity
+* purity_nsfw {Boolean} - images with nsfw purity
+* resolutions {String} - string of resolutions (specify a comma, can be empty)
+* ratios {String} - string of ratios (specify a comma, can be empty)
+* sorting {String} - one of this: relevance, random, date_added, views, favorites
+* order {String} - one of this: desc, asc
+* page {Int} - page of images
 
 _Returns:_ **{Int, None}** - count of pages
 
@@ -42,17 +42,17 @@ _Returns:_ **{Int, None}** - count of pages
 
 ##### `get_images_urls` - get list of images urls
 _Parameters:_
-- category_general {Boolean} - search in General category
-- category_anime {Boolean} - search in Anime category
-- category_people {Boolean} - search in People category
-- purity_sfw {Boolean} - images with sfw purity
-- purity_sketchy {Boolean} - images with sketchy purity
-- purity_nsfw {Boolean} - images with nsfw purity
-- resolutions {String} - string of resolutions (specify a comma, can be empty)
-- ratios {String} - string of ratios (specify a comma, can be empty)
-- sorting {String} - one of this: relevance, random, date_added, views, favorites
-- order {String} - one of this: desc, asc
-- page {Int} - page of images
+* category_general {Boolean} - search in General category
+* category_anime {Boolean} - search in Anime category
+* category_people {Boolean} - search in People category
+* purity_sfw {Boolean} - images with sfw purity
+* purity_sketchy {Boolean} - images with sketchy purity
+* purity_nsfw {Boolean} - images with nsfw purity
+* resolutions {String} - string of resolutions (specify a comma, can be empty)
+* ratios {String} - string of ratios (specify a comma, can be empty)
+* sorting {String} - one of this: relevance, random, date_added, views, favorites
+* order {String} - one of this: desc, asc
+* page {Int} - page of images
 
 _Returns:_ **{[Strings]}** - array of images urls
 
@@ -60,17 +60,17 @@ _Returns:_ **{[Strings]}** - array of images urls
 
 ##### `get_images_numbers` - get list of images numbers
 _Parameters:_
-- category_general {Boolean} - search in General category
-- category_anime {Boolean} - search in Anime category
-- category_people {Boolean} - search in People category
-- purity_sfw {Boolean} - images with sfw purity
-- purity_sketchy {Boolean} - images with sketchy purity
-- purity_nsfw {Boolean} - images with nsfw purity
-- resolutions {String} - string of resolutions (specify a comma, can be empty)
-- ratios {String} - string of ratios (specify a comma, can be empty)
-- sorting {String} - one of this: relevance, random, date_added, views, favorites
-- order {String} - one of this: desc, asc
-- page {Int} - page of images
+* category_general {Boolean} - search in General category
+* category_anime {Boolean} - search in Anime category
+* category_people {Boolean} - search in People category
+* purity_sfw {Boolean} - images with sfw purity
+* purity_sketchy {Boolean} - images with sketchy purity
+* purity_nsfw {Boolean} - images with nsfw purity
+* resolutions {String} - string of resolutions (specify a comma, can be empty)
+* ratios {String} - string of ratios (specify a comma, can be empty)
+* sorting {String} - one of this: relevance, random, date_added, views, favorites
+* order {String} - one of this: desc, asc
+* page {Int} - page of images
 
 _Returns:_ **{[Strings]}** - array of images numbers
 
@@ -78,7 +78,7 @@ _Returns:_ **{[Strings]}** - array of images numbers
 
 ##### `is_image_exists` - check if image exists
 _Parameters:_
-- image_number {String} - image number
+* image_number {String} - image number
 
 _Returns:_ **{Boolean}** - image exists
 
@@ -86,7 +86,7 @@ _Returns:_ **{Boolean}** - image exists
 
 ##### `get_image_data` - get image data
 _Parameters:_
-- image_number {String} - image number
+* image_number {String} - image number
 
 _Returns:_ **{Json}** - parameters of image
 

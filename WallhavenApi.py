@@ -53,14 +53,14 @@ class WallhavenApi:
         self.request_lock.release()
         return result
 
-    def _get_images_page_data(self, categories, purity, resolutions, ratios, sorting, order, page):
-        page_data = self._wallhaven_get('https://alpha.wallhaven.cc/search', params={"categories": categories,
-                                                                                     "purity": purity,
-                                                                                     "resolutions": resolutions,
-                                                                                     "ratios": ratios,
-                                                                                     "sorting": sorting,
-                                                                                     "order": order,
-                                                                                     "page": page},
+    def _get_images_page_data(self, categories, purity, resolutions, ratios, sorting, order, page, search_query=None):
+        params = {"categories": categories, "purity": purity, "resolutions": resolutions, "ratios": ratios,
+                  "sorting": sorting, "order": order, "page": page}
+
+        if search_query is not None:
+            params["q"] = search_query
+
+        page_data = self._wallhaven_get('https://alpha.wallhaven.cc/search', params=params,
                                         verify=self.verify_connection)
 
         logging.debug("Page request code %d", page_data.status_code)
@@ -87,11 +87,11 @@ class WallhavenApi:
 
     def get_pages_count(self, category_general=True, category_anime=True, category_people=True, purity_sfw=True,
                         purity_sketchy=True, purity_nsfw=False, resolutions="", ratios="", sorting="", order="desc",
-                        page=1):
+                        page=1, search_query=None):
         page_data = self._get_images_page_data(
             str(int(category_general)) + str(int(category_anime)) + str(int(category_people)),
             str(int(purity_sfw)) + str(int(purity_sketchy)) + str(int(purity_nsfw)), resolutions, ratios, sorting,
-            order, page)
+            order, page, search_query)
 
         if page_data.status_code != 200:
             return None
@@ -106,9 +106,10 @@ class WallhavenApi:
 
     def get_images_urls(self, category_general=True, category_anime=True, category_people=True, purity_sfw=True,
                         purity_sketchy=True, purity_nsfw=False, resolutions="", ratios="", sorting="", order="desc",
-                        page=1):
+                        page=1, search_query=None):
         image_numbers = self.get_images_numbers(category_general, category_anime, category_people, purity_sfw,
-                                                purity_sketchy, purity_nsfw, resolutions, ratios, sorting, order, page)
+                                                purity_sketchy, purity_nsfw, resolutions, ratios, sorting, order, page,
+                                                search_query)
 
         if image_numbers is None:
             return None
@@ -117,13 +118,13 @@ class WallhavenApi:
 
     def get_images_numbers(self, category_general=True, category_anime=True, category_people=True, purity_sfw=True,
                            purity_sketchy=True, purity_nsfw=False, resolutions="", ratios="", sorting="", order="desc",
-                           page=1):
+                           page=1, search_query=None):
         logging.debug("Trying obtain image number")
 
         page_data = self._get_images_page_data(
             str(int(category_general)) + str(int(category_anime)) + str(int(category_people)),
             str(int(purity_sfw)) + str(int(purity_sketchy)) + str(int(purity_nsfw)),
-            resolutions, ratios, sorting, order, page)
+            resolutions, ratios, sorting, order, page, search_query)
 
         if page_data.status_code != 200:
             return None
@@ -292,3 +293,9 @@ class WallhavenApi:
             image_data["Favorites"] = int(favorites_tag.text.replace(",", ""))
 
         return image_data
+
+    def test(self):
+        r = self._wallhaven_post('https://alpha.wallhaven.cc/wallpaper/purity',
+                                 data={'wallpaper_id': '123676', 'purity':'s'})
+
+        print(1)

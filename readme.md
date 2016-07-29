@@ -36,6 +36,7 @@ _Parameters:_
 * sorting {String} - one of this: relevance, random, date_added, views, favorites
 * order {String} - one of this: desc, asc
 * page {Int} - page of images
+* search_query {String} - search query
 
 _Returns:_ **{Int, None}** - count of pages
 
@@ -55,6 +56,7 @@ _Parameters:_
 * sorting {String} - one of this: relevance, random, date_added, views, favorites
 * order {String} - one of this: desc, asc
 * page {Int} - page of images
+* search_query {String} - search query
 
 _Returns:_ **{[Strings]}** - array of images urls
 
@@ -74,6 +76,7 @@ _Parameters:_
 * sorting {String} - one of this: relevance, random, date_added, views, favorites
 * order {String} - one of this: desc, asc
 * page {Int} - page of images
+* search_query {String} - search query
 
 _Returns:_ **{[Strings]}** - array of images numbers
 

@@ -38,7 +38,7 @@ _Parameters:_
 * page {Int} - page of images
 * search_query {String} - search query
 
-_Returns:_ **{Int, None}** - count of pages
+_Return:_ **{Int, None}** - count of pages
 
 ---
 
@@ -58,7 +58,7 @@ _Parameters:_
 * page {Int} - page of images
 * search_query {String} - search query
 
-_Returns:_ **{[Strings]}** - array of images urls
+_Return:_ **{[Strings]}** - array of images urls
 
 ---
 
@@ -78,7 +78,7 @@ _Parameters:_
 * page {Int} - page of images
 * search_query {String} - search query
 
-_Returns:_ **{[Strings]}** - array of images numbers
+_Return:_ **{[Strings]}** - array of images numbers
 
 ---
 
@@ -87,7 +87,7 @@ _Parameters:_
 
 * image_number {String} - image number
 
-_Returns:_ **{Boolean}** - image exists
+_Return:_ **{Boolean}** - image exists
 
 ---
 
@@ -96,7 +96,7 @@ _Parameters:_
 
 * image_number {String} - image number
 
-_Returns:_ **{Json}** - parameters of image
+_Return:_ **{Json}** - parameters of image
 
 _Example:_
 ```json
@@ -125,4 +125,34 @@ _Example:_
 
 ---
 
+##### `login` - log in to wallhaven
 
+_Return:_ **{Boolean}** - status of log in
+
+---
+
+##### `logout` - log out from wallhaven
+
+_Return:_ **{Boolean}** - status of log out
+
+---
+
+##### `make_image_url` - make url to image
+_Parameters:_
+
+* image_number {String} - image number
+
+_Return:_ **{String}** - url to image
+
+---
+
+##### `download_image` - download image to file
+_Parameters:_
+
+* image_number {String} - image number
+* image_path {String} - path to file
+* chunk_size {Number} - downloading chunk size
+
+_Return:_ **{Boolean}** - status of downloading
+
+---

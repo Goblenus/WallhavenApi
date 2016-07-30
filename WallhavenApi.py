@@ -2,6 +2,7 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 import threading
+import os
 
 
 class WallhavenApi:
@@ -14,32 +15,44 @@ class WallhavenApi:
         self.username = username
         self.password = password
 
-        self.logged_in = False
+        self.token = ""
 
-        if self.username is not None and len(self.username) and password is not None and len(self.password):
-            self._login()
+        self.logged_in = self.login()
 
-    def _login(self):
+    def login(self):
+        if self.logged_in:
+            return True
+
+        if self.username is None or not len(self.username) or self.password is None or not len(self.password):
+            return False
+
         home_page = self._wallhaven_get("https://alpha.wallhaven.cc/", verify=self.verify_connection)
 
         if home_page.status_code != 200:
-            return
+            return False
 
         token_tag = BeautifulSoup(home_page.text, "html.parser")\
             .select('#login > input[name="_token"]')
 
         if len(token_tag) == 0:
-            return
+            return False
+
+        self.token = token_tag[0].attrs['value']
 
         page = self._wallhaven_post("https://alpha.wallhaven.cc/auth/login", data={"username": self.username,
                                                                                    "password": self.password,
-                                                                                   "_token":
-                                                                                       token_tag[0].attrs['value']},
+                                                                                   "_token": self.token},
                                     verify=self.verify_connection)
         if page.status_code != 200:
-            return
+            return False
 
-        self.logged_in = True
+        return True
+
+    def logout(self):
+        if not self.logged_in:
+            return True
+
+        return self._wallhaven_get("https://alpha.wallhaven.cc/auth/logout").status_code == 200
 
     def _wallhaven_post(self, url, data=None, json=None, **kwargs):
         self.request_lock.acquire()
@@ -157,6 +170,30 @@ class WallhavenApi:
 
         return True
 
+    def download_image(self, image_number, file_path, chunk_size=4096):
+        if not self.is_image_exists(image_number):
+            return False
+
+        image_data = requests.get(self.make_image_url(image_number), stream=True, verify=False)
+
+        logging.debug("Image page loaded with code %d", image_data.status_code)
+
+        if image_data.status_code != 200:
+            return False
+
+        self.make_image_url(image_number)
+
+        image_abs_path = os.path.abspath(file_path)
+
+        if not os.path.exists(os.path.dirname(image_abs_path)):
+            os.makedirs(os.path.dirname(image_abs_path))
+
+        with os.path.abspath(image_abs_path) as image_file:
+            for chunk in image_data.iter_content(chunk_size):
+                image_file.write(chunk)
+
+        return True
+
     def get_image_data(self, image_number):
         resolution_tag_selector = "#showcase-sidebar > div > div.sidebar-content > h3"
         color_tag_selector = "#showcase-sidebar > div > div.sidebar-content > ul > li"
@@ -184,7 +221,7 @@ class WallhavenApi:
         image_data = {"ImageUrl": self.make_image_url(image_number),
                       "Tags": [],
                       "ImageColors": [],
-                      "Purity": None, # {"SFW": False, "Sketchy": False, "NSFW": False},
+                      "Purity": None,
                       "Uploader": {"Avatar": {"32": None, "200": None}, "Username": None},
                       "ShortUrl": "https://whvn.cc/{0}".format(str(image_number)),
                       "Resolution": None,
@@ -293,9 +330,3 @@ class WallhavenApi:
             image_data["Favorites"] = int(favorites_tag.text.replace(",", ""))
 
         return image_data
-
-    def test(self):
-        r = self._wallhaven_post('https://alpha.wallhaven.cc/wallpaper/purity',
-                                 data={'wallpaper_id': '123676', 'purity':'s'})
-
-        print(1)

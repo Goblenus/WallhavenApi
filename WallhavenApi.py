@@ -17,6 +17,7 @@ class WallhavenApi:
 
         self.token = ""
 
+        self.logged_in = False
         self.logged_in = self.login()
 
     def login(self):
@@ -52,7 +53,9 @@ class WallhavenApi:
         if not self.logged_in:
             return True
 
-        return self._wallhaven_get("https://alpha.wallhaven.cc/auth/logout").status_code == 200
+        self.logged_in = not self._wallhaven_get("https://alpha.wallhaven.cc/auth/logout").status_code == 200
+
+        return not self.logged_in
 
     def _wallhaven_post(self, url, data=None, json=None, **kwargs):
         self.request_lock.acquire()
@@ -95,8 +98,9 @@ class WallhavenApi:
                 for image_number in images_numbers]
 
     @staticmethod
-    def make_image_url(image_number):
-        return 'https://wallpapers.wallhaven.cc/wallpapers/full/wallhaven-{0}.jpg' .format(str(image_number))
+    def make_image_url(image_number, extension='jpg'):
+        return 'https://wallpapers.wallhaven.cc/wallpapers/full/wallhaven-{0}.{1}' .format(str(image_number),
+                                                                                           str(extension))
 
     def get_pages_count(self, category_general=True, category_anime=True, category_people=True, purity_sfw=True,
                         purity_sketchy=True, purity_nsfw=False, resolutions="", ratios="", sorting="", order="desc",
@@ -174,12 +178,14 @@ class WallhavenApi:
         if not self.is_image_exists(image_number):
             return False
 
-        image_data = requests.get(self.make_image_url(image_number), stream=True, verify=False)
+        image_data = self._wallhaven_get(self.make_image_url(image_number), stream=True, verify=False)
 
         logging.debug("Image page loaded with code %d", image_data.status_code)
 
         if image_data.status_code != 200:
-            return False
+            image_data = self._wallhaven_get(self.make_image_url(image_number, "png"), stream=True, verify=False)
+            if image_data.status_code != 200:
+                return False
 
         self.make_image_url(image_number)
 
@@ -188,7 +194,7 @@ class WallhavenApi:
         if not os.path.exists(os.path.dirname(image_abs_path)):
             os.makedirs(os.path.dirname(image_abs_path))
 
-        with os.path.abspath(image_abs_path) as image_file:
+        with open(os.path.abspath(image_abs_path), "wb") as image_file:
             for chunk in image_data.iter_content(chunk_size):
                 image_file.write(chunk)
 

@@ -214,6 +214,7 @@ class WallhavenApi:
         size_tag_selector = "div[data-storage-id=showcase-info] > dl > dd:nth-of-type(3)"
         views_tag_selector = "div[data-storage-id=showcase-info] > dl > dd:nth-of-type(4)"
         favorites_tag_selector = "div[data-storage-id=showcase-info] > dl > dd:nth-of-type(5) > a"
+        image_url_selector = "#wallpaper"
 
         page_data = self._get_image_page_data(image_number)
 
@@ -224,7 +225,7 @@ class WallhavenApi:
         if not len(section_tag):
             return None
 
-        image_data = {"ImageUrl": self.make_image_url(image_number),
+        image_data = {"ImageUrl": None,
                       "Tags": [],
                       "ImageColors": [],
                       "Purity": None,
@@ -334,5 +335,10 @@ class WallhavenApi:
         if len(favorites_tag):
             favorites_tag = favorites_tag[0]
             image_data["Favorites"] = int(favorites_tag.text.replace(",", ""))
+
+        image_url_tag = BeautifulSoup(page_data.text, "html.parser").select(image_url_selector)
+        if len(image_url_tag):
+            image_url_tag = image_url_tag[0]
+            image_data["ImageUrl"] = image_url_tag.attrs["src"].replace("//", "https://")
 
         return image_data

@@ -60,6 +60,8 @@ _Parameters:_
 
 _Return:_ **{[Strings]}** - array of images urls
 
+**_NOTE:_ deprecated, will be removed**
+
 ---
 
 ##### `get_images_numbers` - get list of images numbers
@@ -143,6 +145,8 @@ _Parameters:_
 * image_number {String} - image number
 
 _Return:_ **{String}** - url to image
+
+**_NOTE:_ deprecated, will be removed**
 
 ---
 

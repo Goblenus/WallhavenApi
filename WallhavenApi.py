@@ -352,3 +352,10 @@ class WallhavenApi:
                                         data={"tag_name": str(tag_name), "wallpaper_id": str(image_number),
                                               "wallpaper_group": str(image_number), "_token": self.token})
         return response.status_code == 200 and response.json()["status"]
+
+    def image_change_purity(self, image_number, purity):
+        if not self.logged_in or str(purity) not in ["sfw", "sketchy", "nsfw"]:
+            return False
+        response = self._wallhaven_post("https://alpha.wallhaven.cc/wallpaper/purity",
+                                        data={"wallpaper_id": str(image_number), "purity": str(purity)})
+        return response.status_code == 200 and response.json()["status"]

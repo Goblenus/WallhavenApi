@@ -157,3 +157,15 @@ _Parameters:_
 _Return:_ **{Boolean}** - status of action
 
 ---
+
+##### `image_change_purity` - change image purity
+_Parameters:_
+
+* image_number {String} - image number
+* purity {String} - purity (can be one of: ["sfw", "sketchy", "nsfw"])
+
+_Return:_ **{Boolean}** - status of action
+
+---
+
+Feel free to add an issue.

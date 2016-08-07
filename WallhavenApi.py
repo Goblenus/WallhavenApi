@@ -92,16 +92,6 @@ class WallhavenApi:
 
         return page_data
 
-    @staticmethod
-    def _make_images_urls(images_numbers):
-        return ['https://wallpapers.wallhaven.cc/wallpapers/full/wallhaven-{0}.jpg' .format(str(image_number))
-                for image_number in images_numbers]
-
-    @staticmethod
-    def make_image_url(image_number, extension='jpg'):
-        return 'https://wallpapers.wallhaven.cc/wallpapers/full/wallhaven-{0}.{1}' .format(str(image_number),
-                                                                                           str(extension))
-
     def get_pages_count(self, category_general=True, category_anime=True, category_people=True, purity_sfw=True,
                         purity_sketchy=True, purity_nsfw=False, resolutions="", ratios="", sorting="", order="desc",
                         page=1, search_query=None):
@@ -120,18 +110,6 @@ class WallhavenApi:
             return None
 
         return int(h2_tag[0].text[h2_tag[0].text.rfind("/") + 1:])
-
-    def get_images_urls(self, category_general=True, category_anime=True, category_people=True, purity_sfw=True,
-                        purity_sketchy=True, purity_nsfw=False, resolutions="", ratios="", sorting="", order="desc",
-                        page=1, search_query=None):
-        image_numbers = self.get_images_numbers(category_general, category_anime, category_people, purity_sfw,
-                                                purity_sketchy, purity_nsfw, resolutions, ratios, sorting, order, page,
-                                                search_query)
-
-        if image_numbers is None:
-            return None
-
-        return self._make_images_urls(image_numbers)
 
     def get_images_numbers(self, category_general=True, category_anime=True, category_people=True, purity_sfw=True,
                            purity_sketchy=True, purity_nsfw=False, resolutions="", ratios="", sorting="", order="desc",
@@ -215,13 +193,16 @@ class WallhavenApi:
         views_tag_selector = "div[data-storage-id=showcase-info] > dl > dd:nth-of-type(4)"
         favorites_tag_selector = "div[data-storage-id=showcase-info] > dl > dd:nth-of-type(5) > a"
         image_url_selector = "#wallpaper"
+        tags_ex_tags_selector = "#tags > .tag"
 
         page_data = self._get_image_page_data(image_number)
 
         if page_data.status_code != 200:
             return None
 
-        section_tag = BeautifulSoup(page_data.text, "html.parser").select("#showcase")
+        bs_parsed_page = BeautifulSoup(page_data.text, "html.parser")
+
+        section_tag = bs_parsed_page.select("#showcase")
         if not len(section_tag):
             return None
 
@@ -237,30 +218,31 @@ class WallhavenApi:
                       "Category": None,
                       "Size": None,
                       "Views": None,
-                      "Favorites": None}
+                      "Favorites": None,
+                      "TagsEx": []}
 
-        resolution_tag = BeautifulSoup(page_data.text, "html.parser").select(resolution_tag_selector)
+        resolution_tag = bs_parsed_page.select(resolution_tag_selector)
         if len(resolution_tag):
             resolution_tag = resolution_tag[0]
             image_data["Resolution"] = str(resolution_tag.text).replace(" ", "")
 
             image_data["Ratio"] = resolution_tag.attrs["title"]
 
-        color_tag = BeautifulSoup(page_data.text, "html.parser").select(color_tag_selector)
+        color_tag = bs_parsed_page.select(color_tag_selector)
         if len(color_tag):
             for color_tag in color_tag:
                 style = color_tag.attrs["style"]
                 image_data["ImageColors"].append(style[style.rfind("#"):])
 
-        tags_tags = BeautifulSoup(page_data.text, "html.parser").select(tags_tags_selector)
+        tags_tags = bs_parsed_page.select(tags_tags_selector)
         if len(tags_tags):
             for tag_tag in tags_tags:
                 image_data["Tags"].append(tag_tag.text)
 
-        sfw_tag = BeautifulSoup(page_data.text, "html.parser").select(sfw_tag_selector)
+        sfw_tag = bs_parsed_page.select(sfw_tag_selector)
         if len(sfw_tag):
             if self.logged_in:
-                sfw_checkbox_tag = BeautifulSoup(page_data.text, "html.parser").select("#sfw")
+                sfw_checkbox_tag = bs_parsed_page.select("#sfw")
                 if len(sfw_checkbox_tag):
                     sfw_checkbox_tag = sfw_checkbox_tag[0]
                     if sfw_checkbox_tag.has_attr('checked'):
@@ -271,10 +253,10 @@ class WallhavenApi:
                image_data["Purity"] = "SFW"
 
         if image_data["Purity"] is None:
-            sketchy_tag = BeautifulSoup(page_data.text, "html.parser").select(sketchy_tag_selector)
+            sketchy_tag = bs_parsed_page.select(sketchy_tag_selector)
             if len(sketchy_tag):
                 if self.logged_in:
-                    sketchy_checkbox_tag = BeautifulSoup(page_data.text, "html.parser").select("#sketchy")
+                    sketchy_checkbox_tag = bs_parsed_page.select("#sketchy")
                     if len(sketchy_checkbox_tag):
                         sketchy_checkbox_tag = sketchy_checkbox_tag[0]
                         if sketchy_checkbox_tag.has_attr('checked'):
@@ -285,10 +267,10 @@ class WallhavenApi:
                    image_data["Purity"] = "Sketchy"
 
         if image_data["Purity"] is None:
-            nsfw_tag = BeautifulSoup(page_data.text, "html.parser").select(nsfw_tag_selector)
+            nsfw_tag = bs_parsed_page.select(nsfw_tag_selector)
             if len(nsfw_tag):
                 if self.logged_in:
-                    nsfw_checkbox_tag = BeautifulSoup(page_data.text, "html.parser").select("#nsfw")
+                    nsfw_checkbox_tag = bs_parsed_page.select("#nsfw")
                     if len(nsfw_checkbox_tag):
                         nsfw_checkbox_tag = nsfw_checkbox_tag[0]
                         if nsfw_checkbox_tag.has_attr('checked'):
@@ -298,7 +280,7 @@ class WallhavenApi:
                 else:
                    image_data["Purity"] = "NSFW"
 
-        avatar_tag = BeautifulSoup(page_data.text, "html.parser").select(avatar_tag_selector)
+        avatar_tag = bs_parsed_page.select(avatar_tag_selector)
         if len(avatar_tag):
             avatar_tag = avatar_tag[0]
             avatar_url = avatar_tag.attrs["src"]
@@ -306,39 +288,67 @@ class WallhavenApi:
                 avatar_url = avatar_url[2:]
             image_data["Uploader"]["Avatar"] = {"32": avatar_url, "200": avatar_url.replace("/32/", "/200/")}
 
-        username_tag = BeautifulSoup(page_data.text, "html.parser").select(username_tag_selector)
+        username_tag = bs_parsed_page.select(username_tag_selector)
         if len(username_tag):
             username_tag = username_tag[0]
             image_data["Uploader"]["Username"] = username_tag.text
 
-        upload_time_tag = BeautifulSoup(page_data.text, "html.parser").select(upload_time_tag_selector)
+        upload_time_tag = bs_parsed_page.select(upload_time_tag_selector)
         if len(upload_time_tag):
             upload_time_tag = upload_time_tag[0]
             image_data["UploadTime"] = upload_time_tag.attrs["datetime"]
 
-        category_tag = BeautifulSoup(page_data.text, "html.parser").select(category_tag_selector)
+        category_tag = bs_parsed_page.select(category_tag_selector)
         if len(category_tag):
             category_tag = category_tag[0]
             image_data["Category"] = category_tag.text
 
-        size_tag = BeautifulSoup(page_data.text, "html.parser").select(size_tag_selector)
+        size_tag = bs_parsed_page.select(size_tag_selector)
         if len(size_tag):
             size_tag = size_tag[0]
             image_data["Size"] = size_tag.text
 
-        views_tag = BeautifulSoup(page_data.text, "html.parser").select(views_tag_selector)
+        views_tag = bs_parsed_page.select(views_tag_selector)
         if len(views_tag):
             views_tag = views_tag[0]
             image_data["Views"] = int(views_tag.text.replace(",", ""))
 
-        favorites_tag = BeautifulSoup(page_data.text, "html.parser").select(favorites_tag_selector)
+        favorites_tag = bs_parsed_page.select(favorites_tag_selector)
         if len(favorites_tag):
             favorites_tag = favorites_tag[0]
             image_data["Favorites"] = int(favorites_tag.text.replace(",", ""))
 
-        image_url_tag = BeautifulSoup(page_data.text, "html.parser").select(image_url_selector)
+        image_url_tag = bs_parsed_page.select(image_url_selector)
         if len(image_url_tag):
             image_url_tag = image_url_tag[0]
             image_data["ImageUrl"] = image_url_tag.attrs["src"].replace("//", "https://")
 
+        tags_ex_tags = bs_parsed_page.select(tags_ex_tags_selector)
+        if len(tags_ex_tags):
+            for tag_ex_tag in tags_ex_tags:
+                tag_ex = {"Name": tag_ex_tag.select(".tagname")[0].text, "Id": tag_ex_tag.attrs["data-tag-id"],
+                          "Type": None}
+
+                for class_name in tag_ex_tag.attrs["class"]:
+                    if "tag-" in class_name:
+                        tag_ex["Type"] = class_name[4:]
+                        break
+
+                image_data["TagsEx"].append(tag_ex)
+
         return image_data
+
+    def image_tag_delete(self, image_number, tag_id):
+        if not self.logged_in:
+            return False
+        response = self._wallhaven_post("https://alpha.wallhaven.cc/wallpaper/tag/remove/{0}/{1}?_token={2}"
+            .format(str(tag_id), str(image_number), str(self.token)))
+        return response.status_code == 200 and response.json()["status"]
+
+    def image_tag_add(self, image_number, tag_name):
+        if not self.logged_in:
+            return False
+        response = self._wallhaven_post("https://alpha.wallhaven.cc/wallpaper/tag/add",
+                                        data={"tag_name": str(tag_name), "wallpaper_id": str(image_number),
+                                              "wallpaper_group": str(image_number), "_token": self.token})
+        return response.status_code == 200 and response.json()["status"]

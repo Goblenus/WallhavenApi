@@ -1,5 +1,7 @@
 # Wallhaven API for Python
 
+Feel free to add an issue.
+
 ## Description
 Not implemented
 
@@ -75,8 +77,22 @@ _Return:_ **{Boolean}** - image exists
 _Parameters:_
 
 * image_number {String} - image number
+* uploader {Boolean} - get uploader
+* category {Boolean} - get category
+* short_url {Boolean} - get short_url
+* upload_time {Boolean} - get upload_time
+* tags {Boolean} - get tags
+* ratio {Boolean} - get ratio
+* resolution {Boolean} - get resolution
+* image_colors {Boolean} - get image_colors
+* favorites {Boolean} - get favorites
+* image_url {Boolean} - get image_url
+* size {Boolean} - get size
+* purity {Boolean} - get purity
+* views {Boolean} - get views
+* tags_ex {Boolean} - get tags_ex
 
-_Return:_ **{Json}** - parameters of image
+_Return:_ **{Dict}** - parameters of image
 
 _Example:_
 ```json
@@ -132,7 +148,7 @@ _Return:_ **{Boolean}** - status of log out
 _Parameters:_
 
 * image_number {String} - image number
-* image_path {String} - path to file
+* file_path {String} - path to file
 * chunk_size {Number} - downloading chunk size
 
 _Return:_ **{Boolean}** - status of downloading
@@ -168,4 +184,119 @@ _Return:_ **{Boolean}** - status of action
 
 ---
 
-Feel free to add an issue.
+##### `get_image_uploader` - get image uploader
+_Parameters:_
+
+* image_number {String} - image number
+
+_Return:_ **{Dict}** - uploader
+
+---
+
+##### `get_image_category` - get image category
+_Parameters:_
+
+* image_number {String} - image number
+
+_Return:_ **{String}** - cetegory
+
+---
+
+##### `get_image_short_url` - get short url
+_Parameters:_
+
+* image_number {String} - image number
+
+_Return:_ **{String}** - short url
+
+---
+
+##### `get_image_upload_time` - get upload time
+_Parameters:_
+
+* image_number {String} - image number
+
+_Return:_ **{String}** - upload time
+
+---
+
+##### `get_image_ratio` - get ratio
+_Parameters:_
+
+* image_number {String} - image number
+
+_Return:_ **{String}** - ratio
+
+---
+
+##### `get_image_resolution` - get resolution
+_Parameters:_
+
+* image_number {String} - image number
+
+_Return:_ **{String}** - resolution
+
+---
+
+##### `get_image_colors` - get colors
+_Parameters:_
+
+* image_number {String} - image number
+
+_Return:_ **{[String]}** - array of colors
+
+---
+
+##### `get_image_favorites` - get favorites
+_Parameters:_
+
+* image_number {String} - image number
+
+_Return:_ **{Int}** - favorites
+
+---
+
+##### `get_image_url` - get url
+_Parameters:_
+
+* image_number {String} - image number
+
+_Return:_ **{String}** - url
+
+---
+
+##### `get_image_size` - get size
+_Parameters:_
+
+* image_number {String} - image number
+
+_Return:_ **{String}** - size
+
+---
+
+##### `get_image_purity` - get purity
+_Parameters:_
+
+* image_number {String} - image number
+
+_Return:_ **{String}** - purity
+
+---
+
+##### `get_image_views` - get views
+_Parameters:_
+
+* image_number {String} - image number
+
+_Return:_ **{Int}** - views
+
+---
+
+##### `get_image_tags_ex` - get tags
+_Parameters:_
+
+* image_number {String} - image number
+
+_Return:_ **{{Tags}}** - dict of tags
+
+---

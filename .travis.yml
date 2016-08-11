@@ -6,4 +6,7 @@ python:
 install:
   - "pip install bs4"
   - "pip install requests"
-script: "python Tests.py"
+  - "pip install coveralls"
+script: "coverage run Tests.py"
+after_success:
+  coveralls

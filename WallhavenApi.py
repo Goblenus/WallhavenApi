@@ -20,7 +20,14 @@ class WallhavenApi:
         self.logged_in = False
         self.logged_in = self.login()
 
-    def login(self):
+    def login(self, username=None, password=None):
+        if (username is not None and password is not None) and (username != self.username or password != self.password):
+            if self.logged_in:
+                self.logout()
+
+            self.username = username
+            self.password = password
+
         if self.logged_in:
             return True
 

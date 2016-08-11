@@ -1,5 +1,6 @@
 # Wallhaven API for Python
 [![Build Status](https://travis-ci.org/Goblenus/WallhavenApi.svg?branch=master)](https://travis-ci.org/Goblenus/WallhavenApi)
+[![Coverage Status](https://coveralls.io/repos/github/Goblenus/WallhavenApi/badge.svg?branch=master)](https://coveralls.io/github/Goblenus/WallhavenApi?branch=master)
 
 Feel free to add an issue.
 

@@ -6,4 +6,4 @@ python:
 install:
   - "pip install bs4"
   - "pip install requests"
-script: Tests.py
+script: "python Tests.py"

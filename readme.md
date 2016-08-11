@@ -1,4 +1,5 @@
 # Wallhaven API for Python
+[![Build Status](https://travis-ci.org/Goblenus/WallhavenApi.svg?branch=master)](https://travis-ci.org/Goblenus/WallhavenApi)
 
 Feel free to add an issue.
 

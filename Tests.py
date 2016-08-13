@@ -70,5 +70,64 @@ class TestLoggedUser(unittest.TestCase):
     def test_get_image_tags_ex(self):
         self.assertTrue(len(self.wa.get_image_tags_ex("329194")) > 0)
 
+    def test_get_image_data(self):
+        data = self.wa.get_image_data("329194")
+
+        self.assertIn("Category", data)
+        self.assertIsNotNone(data["Category"])
+        self.assertEqual(data["Category"], self.wa.get_image_category("329194"))
+
+        self.assertIn("ShortUrl", data)
+        self.assertIsNotNone(data["ShortUrl"])
+        self.assertEqual(data["ShortUrl"], self.wa.get_image_short_url("329194"))
+
+        self.assertIn("UploadTime", data)
+        self.assertIsNotNone(data["UploadTime"])
+        self.assertEqual(data["UploadTime"], self.wa.get_image_upload_time("329194"))
+
+        self.assertIn("Ratio", data)
+        self.assertIsNotNone(data["Ratio"])
+        self.assertEqual(data["Ratio"], self.wa.get_image_ratio("329194"))
+
+        self.assertIn("Resolution", data)
+        self.assertIsNotNone(data["Resolution"])
+        self.assertEqual(data["Resolution"], self.wa.get_image_resolution("329194"))
+
+        self.assertIn("ImageColors", data)
+        self.assertIsNotNone(data["ImageColors"])
+        self.assertSequenceEqual(data["ImageColors"], self.wa.get_image_colors("329194"))
+
+        self.assertIn("Favorites", data)
+        self.assertIsNotNone(data["Favorites"])
+        self.assertEqual(data["Favorites"], self.wa.get_image_favorites("329194"))
+
+        self.assertIn("ImageUrl", data)
+        self.assertIsNotNone(data["ImageUrl"])
+        self.assertEqual(data["ImageUrl"], self.wa.get_image_url("329194"))
+
+        self.assertIn("Size", data)
+        self.assertIsNotNone(data["Size"])
+        self.assertEqual(data["Size"], self.wa.get_image_size("329194"))
+
+        self.assertIn("Purity", data)
+        self.assertIsNotNone(data["Purity"])
+        self.assertEqual(data["Purity"], self.wa.get_image_purity("329194"))
+
+        self.assertIn("Views", data)
+        self.assertIsNotNone(data["Views"])
+        self.assertEqual(data["Views"], self.wa.get_image_views("329194"))
+
+        self.assertIn("TagsEx", data)
+        self.assertIsNotNone(data["TagsEx"])
+
+        tags_ex = sorted(self.wa.get_image_tags_ex("329194"), key=lambda k: k['Id'])
+        data["TagsEx"] = sorted(data["TagsEx"], key=lambda k: k['Id'])
+        self.assertEqual(len(tags_ex), len(data["TagsEx"]))
+        for i in range(0, len(tags_ex)):
+            self.assertDictEqual(tags_ex[i], data["TagsEx"][i])
+
+    def test_get_get_images_numbers(self):
+        self.assertGreater(len(self.wa.get_images_numbers()), 0)
+
 if __name__ == '__main__':
     unittest.main()

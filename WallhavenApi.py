@@ -400,7 +400,7 @@ class WallhavenApi:
             resolutions, ratios, sorting, order, page, search_query)
 
         if page_data.status_code != 200:
-            return None
+            return []
 
         figures_tags = BeautifulSoup(page_data.text, "html.parser")\
             .select("#thumbs > section:nth-of-type(1) > ul > li > figure[data-wallpaper-id]")
@@ -408,7 +408,7 @@ class WallhavenApi:
         logging.debug("Found %d images tags", len(figures_tags))
 
         if not len(figures_tags):
-            return None
+            return []
 
         images_numbers = []
 

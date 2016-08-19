@@ -7,6 +7,16 @@ Feel free to add an issue.
 ## Description
 Not implemented
 
+## Dependencies
+
+```sh
+# pip install requests
+```
+
+```sh
+# pip install bs4
+```
+
 ## Quick Documentation
 Import WallhavenApi package:
 ```python

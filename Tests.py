@@ -1,5 +1,6 @@
 import unittest
 import WallhavenApi
+import os
 
 
 class TestClassInitLogin(unittest.TestCase):
@@ -128,6 +129,25 @@ class TestLoggedUser(unittest.TestCase):
 
     def test_get_get_images_numbers(self):
         self.assertGreater(len(self.wa.get_images_numbers()), 0)
+
+    def test_download_image(self):
+        self.assertTrue(self.wa.download_image("329194", "tempfile.jpg"))
+        os.remove("tempfile.jpg")
+
+    def test_get_image_puruty_nsfw(self):
+        self.assertIsNotNone(self.wa.get_image_purity("166969"))
+
+    def test_image_tag_actions(self):
+        tags = self.wa.get_image_tags_ex("329194")
+        if len(tags):
+            self.assertTrue(self.wa.image_tag_delete("329194", tags[0]["Id"]))
+            self.assertTrue(self.wa.image_tag_add("329194", tags[0]["Name"]))
+        else:
+            self.assertTrue(False)
+
+    def test_image_change_purity(self):
+        self.assertTrue(self.wa.image_change_purity("329194", "sfw"))
+        self.assertTrue(self.wa.image_change_purity("329194", "sketchy"))
 
 if __name__ == '__main__':
     unittest.main()

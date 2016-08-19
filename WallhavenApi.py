@@ -60,7 +60,8 @@ class WallhavenApi:
         if not self.logged_in:
             return True
 
-        self.logged_in = not self._wallhaven_get("https://alpha.wallhaven.cc/auth/logout").status_code == 200
+        self.logged_in = not self._wallhaven_get("https://alpha.wallhaven.cc/auth/logout",
+                                                 params={"_token": self.token}).status_code == 200
 
         return not self.logged_in
 
@@ -426,19 +427,22 @@ class WallhavenApi:
         return self._is_image_exists(BeautifulSoup(page_data.text, "html.parser"))
 
     def download_image(self, image_number, file_path, chunk_size=4096):
-        if not self.is_image_exists(image_number):
+        bs_parsed_page = self._get_image_bs_parsed_page(image_number)
+
+        if bs_parsed_page is None:
             return False
 
-        image_data = self._wallhaven_get(self.make_image_url(image_number), stream=True, verify=False)
+        image_url = self._get_image_url(image_number, bs_parsed_page)
+
+        if image_url is None:
+            return False
+
+        image_data = self._wallhaven_get(image_url, stream=True, verify=False)
 
         logging.debug("Image page loaded with code %d", image_data.status_code)
 
         if image_data.status_code != 200:
-            image_data = self._wallhaven_get(self.make_image_url(image_number, "png"), stream=True, verify=False)
-            if image_data.status_code != 200:
-                return False
-
-        self.make_image_url(image_number)
+            return False
 
         image_abs_path = os.path.abspath(file_path)
 

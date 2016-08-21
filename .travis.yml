@@ -4,6 +4,7 @@ python:
   - "3.4"
   - "3.5"
 install:
+  - "pip install -r requirements.txt"
   - "pip install coveralls"
 script: "coverage run --source=WallhavenApi Tests.py"
 after_success:

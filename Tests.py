@@ -138,16 +138,45 @@ class TestLoggedUser(unittest.TestCase):
         self.assertIsNotNone(self.wa.get_image_purity("166969"))
 
     def test_image_tag_actions(self):
-        tags = self.wa.get_image_tags_ex("329194")
+        image_numbers = self.wa.get_images_numbers(sorting="random")
+        self.assertGreater(len(image_numbers), 0)
+        tags = self.wa.get_image_tags_ex(image_numbers[0])
         if len(tags):
-            self.assertTrue(self.wa.image_tag_delete("329194", tags[0]["Id"]))
-            self.assertTrue(self.wa.image_tag_add("329194", tags[0]["Name"]))
+            self.assertTrue(self.wa.image_tag_delete(image_numbers[0], tags[0]["Id"]))
+            self.assertTrue(self.wa.image_tag_add(image_numbers[0], tags[0]["Name"]))
         else:
             self.assertTrue(False)
 
     def test_image_change_purity(self):
-        self.assertTrue(self.wa.image_change_purity("329194", "sfw"))
-        self.assertTrue(self.wa.image_change_purity("329194", "sketchy"))
+        image_numbers = self.wa.get_images_numbers(sorting="random")
+        self.assertGreater(len(image_numbers), 0)
+        purity = self.wa.get_image_purity(image_numbers[0])
+        self.assertIsNotNone(purity)
+        purity = str(purity).lower()
+        self.assertTrue(self.wa.image_change_purity(image_numbers[0], list({"sfw", "sketchy", "nsfw"} - {purity})[0]))
+        self.assertTrue(self.wa.image_change_purity(image_numbers[0], purity))
+
+    def test_image_change_purity_wrong_purity(self):
+        self.assertFalse(self.wa.image_change_purity("1111", "wrong"))
+
+    def test_is_image_exists(self):
+        image_numbers = self.wa.get_images_numbers(sorting="random")
+        self.assertGreater(len(image_numbers), 0)
+        self.wa.is_image_exists(image_numbers[0])
+
+class TestAnonymousUser(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.wa = WallhavenApi.WallhavenApi()
+
+    def test_image_tag_delete(self):
+        self.assertFalse(self.wa.image_tag_delete("1111", "1111"))
+
+    def test_image_tag_add(self):
+        self.assertFalse(self.wa.image_tag_add("1111", "1111"))
+
+    def test_image_change_purity(self):
+        self.assertFalse(self.wa.image_change_purity("1111", "swf"))
 
 if __name__ == '__main__':
     unittest.main()

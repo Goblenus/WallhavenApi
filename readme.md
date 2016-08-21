@@ -2,7 +2,9 @@
 [![Build Status](https://travis-ci.org/Goblenus/WallhavenApi.svg?branch=master)](https://travis-ci.org/Goblenus/WallhavenApi)
 [![Coverage Status](https://coveralls.io/repos/github/Goblenus/WallhavenApi/badge.svg?branch=master)](https://coveralls.io/github/Goblenus/WallhavenApi?branch=master)
 [![codecov](https://codecov.io/gh/Goblenus/WallhavenApi/branch/master/graph/badge.svg)](https://codecov.io/gh/Goblenus/WallhavenApi)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Goblenus/WallhavenApi/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Goblenus/WallhavenApi/?branch=master)
 [![Dependency Status](https://www.versioneye.com/user/projects/57b99484fc1827003bff971d/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/57b99484fc1827003bff971d)
+
 
 Feel free to add an issue.
 

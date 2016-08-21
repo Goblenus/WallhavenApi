@@ -4,8 +4,6 @@ python:
   - "3.4"
   - "3.5"
 install:
-  - "pip install bs4"
-  - "pip install requests"
   - "pip install coveralls"
 script: "coverage run --source=WallhavenApi Tests.py"
 after_success:

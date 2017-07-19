@@ -164,6 +164,78 @@ class TestLoggedUser(unittest.TestCase):
         self.assertGreater(len(image_numbers), 0)
         self.wa.is_image_exists(image_numbers[0])
 
+    def test_get_collections(self):
+        collections = self.wa.get_collections()
+        self.assertGreater(len(collections), 0)
+        self.assertTrue('collection_name' in collections[0])
+        self.assertTrue('collection_id' in collections[0])
+        self.assertTrue(isinstance(collections[0]['collection_name'], str))
+        self.assertTrue(isinstance(collections[0]['collection_id'], str))
+
+    def test_add_rm_user_collections(self):
+        new_collection_name = 'test'
+        orig_collections = self.wa.get_collections()
+
+        # ensure that the a collection of the same name doesn't already exist
+        for c in orig_collections:
+            if c['collection_name'] == new_collection_name:
+                self.assertTrue(self.wa.delete_collection_by_id(c['collection_id']))
+
+        # add new collection
+        self.assertTrue(self.wa.add_collection(new_collection_name))
+
+        # check collection was added
+        collections = self.wa.get_collections()
+        new_collection_found = False
+        new_collection_id = None
+        for c in collections:
+            if c['collection_name'] == new_collection_name:
+                new_collection_found = True
+                new_collection_id = c['collection_id']
+                break
+
+        self.assertTrue(new_collection_found)
+
+        # delete new collection
+        self.assertTrue(self.wa.delete_collection_by_id(new_collection_id))
+
+        # ensure that collection was deleted
+        new_collection_found = False
+        collections = self.wa.get_collections()
+        for c in collections:
+            if c['collection_name'] == new_collection_name:
+                new_collection_found = True
+                break
+
+        self.assertFalse(new_collection_found)
+
+    def test_get_add_rm_favorite_image(self):
+        fav_image = "329194"
+        # ensure that image is not in any of the user collections
+        collections = self.wa.get_collections()
+        for c in collections:
+            c_id = c['collection_id']
+            fav_ids = self.wa.get_images_numbers_from_user_collection_by_id(c_id)
+            if fav_image in fav_ids:
+                self.wa.image_remove_from_favorites(fav_image, double_check=False)
+
+        # work with the default collection
+        default_collection_id = collections[0]['collection_id']
+        orig_fav_ids = self.wa.get_images_numbers_from_user_favorites()
+        
+        # add image to favorites and check that it appears
+        self.assertTrue(self.wa.image_add_to_collection(fav_image, default_collection_id))
+        new_fav_ids = self.wa.get_images_numbers_from_user_favorites()
+        for image_ID in orig_fav_ids:
+            new_fav_ids.remove(image_ID)
+        self.assertEqual(len(new_fav_ids), 1)
+        self.assertEqual(new_fav_ids[0], fav_image)
+
+        # remove image from all collections and double check that it has 
+        # gone from default collection.
+        self.assertTrue(self.wa.image_remove_from_favorites(fav_image, double_check=True))
+
+
 class TestAnonymousUser(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

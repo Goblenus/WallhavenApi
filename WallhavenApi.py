@@ -401,7 +401,7 @@ class WallhavenApi:
             return None
 
         h2_tag = BeautifulSoup(page_data.text, "html.parser")\
-            .select("#thumbs > section:nth-of-type(1) > h2")
+            .select("#thumbs header > h2")
 
         if not len(h2_tag):
             return None

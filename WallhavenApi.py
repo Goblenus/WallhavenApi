@@ -1,6 +1,6 @@
 import logging
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, element
 import threading
 import os
 
@@ -84,6 +84,24 @@ class WallhavenApi:
         result = self.wallhaven_session.get(url, **kwargs)
         self.request_lock.release()
         return result
+
+    def _get_images_collections_page_data(self, page, collection_id=None):
+        params = {"page": page}
+        
+        if collection_id:
+            url = 'https://alpha.wallhaven.cc/favorites/{0}'.format(str(collection_id))
+        else:
+            url = 'https://alpha.wallhaven.cc/favorites'
+
+        page_data = self._wallhaven_get(
+            url, 
+            params=params,
+            verify=self.verify_connection
+        )
+
+        logging.debug("Page request code %d", page_data.status_code)
+
+        return page_data
 
     def _get_images_page_data(self, categories, purity, resolutions, ratios, sorting, order, page, search_query=None):
         params = {"categories": categories, "purity": purity, "resolutions": resolutions, "ratios": ratios,
@@ -566,3 +584,173 @@ class WallhavenApi:
         response = self._wallhaven_post("https://alpha.wallhaven.cc/wallpaper/purity",
                                         data={"wallpaper_id": str(image_number), "purity": str(purity)})
         return response.status_code == 200 and response.json()["status"]
+    
+    def get_images_numbers_from_user_favorites(self):
+        return self.get_images_numbers_from_user_collection_by_id(None)
+    
+    def get_images_numbers_from_user_collection_by_id(self, collection_id):
+        page_number = 0
+        images_numbers = []
+        
+        while True:
+            page_number += 1
+            page_data = self._get_images_collections_page_data(page_number, collection_id=collection_id)
+            
+            if page_data.status_code != 200:
+                return []
+    
+            figures_tags = BeautifulSoup(page_data.text, "html.parser")\
+                .select("#thumbs > section:nth-of-type(1) > ul > li > figure[data-wallpaper-id]")
+    
+            logging.debug("Found %d images tags", len(figures_tags))
+    
+            if not len(figures_tags):
+                break
+    
+            for figure_tag in figures_tags:
+                images_numbers.append(figure_tag.attrs['data-wallpaper-id'])
+
+        return images_numbers
+    
+    def image_add_to_collection(self, image_number, collection_id):
+        # BUG image can only be in one collection at a time
+        params = {
+            "wallID": str(image_number),
+            "collectionID": collection_id,
+            "_token": self.token
+        }
+        page = self._wallhaven_post(
+            "https://alpha.wallhaven.cc/favorites/create",
+            params=params,
+            verify=self.verify_connection
+        )
+        
+        # return codes can't be trusted,
+        return True
+        #if page.status_code == 200:
+        #    return True
+        #else:
+        #    return False
+    
+#    def _image_remove_from_collection_by_id(self, image_number, collection_id):
+#        # BUG image can only be in one collection at a time, so cannot specify 
+#        # what collection to delete image from, can only generically delete 
+#        # image from all of favorites
+#        params = {
+#            "collectionID": collection_id,
+#            "_token": self.token
+#        }
+#        page = self._wallhaven_post(
+#            'https://alpha.wallhaven.cc/favorites/delete/{0}'.format(str(image_number)),
+#            params=params,
+#            verify=self.verify_connection
+#        )
+#
+#        logging.debug("Page request code %d", page.status_code)
+#        
+#        return page.status_code
+    
+    def image_remove_from_favorites(self, image_number, double_check=True):
+        params = {
+            "_token": self.token
+        }
+        page = self._wallhaven_post(
+            'https://alpha.wallhaven.cc/favorites/delete/{0}'.format(str(image_number)),
+            params=params,
+            verify=self.verify_connection
+        )
+
+        logging.debug("Page request code %d", page.status_code)
+        
+        # delete request often returns a 500 error code, even though it has worked,
+        # double_check is a way of checking if the delete was successful without relying
+        # on the returned status code.
+        if not double_check:
+            # return codes can't be trusted,
+            return True
+            #if page.status_code == 200:
+            #    return True
+            #else:
+            #    return False
+        else:
+            fav_ids = self.get_images_numbers_from_user_favorites()
+            if str(image_number) in fav_ids:
+                return False
+            else:
+                return True
+    
+    def get_collections(self):
+        # collections order by ID? and first collection is always the default
+        # regardless of the name?
+        # there will also be a special "trash" collection that will not be 
+        # listed by this function
+        collections = []
+        
+        page_data = self._get_images_collections_page_data(1)
+        
+        if page_data.status_code != 200:
+            return []
+    
+        collection_tags = BeautifulSoup(page_data.text, "html.parser")\
+            .select(".collections-list > li")
+
+        logging.debug("Found %d images tags", len(collection_tags))
+
+        if not len(collection_tags):
+            return []
+
+        for collection_tag in collection_tags:
+            id = None
+            name = None
+            if 'data-collection-id' in collection_tag.attrs:
+                id = collection_tag.attrs['data-collection-id']
+            if id:
+                for child in collection_tag.children:
+                    if child.attrs['class'] and 'label' in child.attrs['class']:
+                        for c in child.contents:
+                            if isinstance(c, element.NavigableString):
+                                name = str(c)
+                                break
+            
+            if name:
+                collections.append({
+                    "collection_name": name,
+                    "collection_id": id
+                })
+
+        return collections
+    
+    def add_collection(self, collection_name):
+        params = {
+            "_token": self.token,
+            "label": collection_name
+        }
+        page = self._wallhaven_post(
+            "https://alpha.wallhaven.cc/collection/new",
+            params=params,
+            verify=self.verify_connection
+        )
+        
+        # return codes can't be trusted,
+        return True
+        #if page.status_code == 302:
+        #    return True
+        #else:
+        #    return False
+    
+    def delete_collection_by_id(self, collection_id):
+        params = {
+            "_token": self.token,
+        }
+        page = self._wallhaven_get(
+            "https://alpha.wallhaven.cc/collection/remove/{0}".format(str(collection_id)),
+            params=params,
+            verify=self.verify_connection
+        )
+        
+        # return codes can't be trusted,
+        return True
+        #if page.status_code == 302:
+        #    return True
+        #else:
+        #    return False

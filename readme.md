@@ -263,7 +263,7 @@ _Return:_ **{[String]}** - array of colors
 
 ---
 
-##### `get_image_favorites` - get favorites
+##### `get_image_favorites` - get the number of users that have favorited an image
 _Parameters:_
 
 * image_number {String} - image number
@@ -314,5 +314,89 @@ _Parameters:_
 * image_number {String} - image number
 
 _Return:_ **{{Tags}}** - dict of tags
+
+---
+
+##### `get_collections` - get list of user collections
+
+(Note that the first collection in the list will be the default collection, regardless of its name. The special "Trash" collection will not be listed)
+
+_Return:_ **{[Dict]}** - list of objects with collection names and IDs
+
+_Example:_
+```json
+[
+	{
+	    "collection_name": 'Default',
+	    "collection_id": 123456
+	},
+	{
+	    "collection_name": 'Collection 2',
+	    "collection_id": 654321
+	},
+]
+```
+
+---
+
+##### `add_collection` - create a new user collection
+_Parameters:_
+
+* collection_name {String} - name of new collection
+
+_Return:_ **{Boolean}** - status of action
+
+---
+
+##### `delete_collection_by_id` - delete a new user collection
+_Parameters:_
+
+* collection_if {String} - ID of collection to delete (can be gained from `get_collections`)
+
+_Return:_ **{Boolean}** - status of action
+
+---
+
+##### `get_images_numbers_from_user_favorites` - get image numbers from user's default collection
+
+(See `get_collections` for definition of default collection)
+
+_Return:_ **{[Strings]}** - array of images numbers
+
+---
+
+##### `get_images_numbers_from_user_collection_by_id` - get image numbers from a specific user's collection
+
+_Parameters:_
+
+* collection_id {String} - collection ID (can be gained from `get_collections`)
+
+_Return:_ **{[Strings]}** - array of images numbers
+
+---
+
+##### `image_add_to_collection` - add image to user's collection
+
+(Note that images can only be in one collection at a time)
+
+_Parameters:_
+
+* image_number {String} - image number
+* collection_id {String} - collection ID (can be gained from `get_collections`)
+
+_Return:_ **{Boolean}** - status of action
+
+---
+
+##### `image_remove_from_favorites` - remove image from user's collections
+
+(Note that that images can only be removed from the user's collections in general, a specific collection cannot be specified)
+
+_Parameters:_
+
+* image_number {String} - image number
+* double_check {Boolean} - check that delete was successful (standard HTTP return code cannot be relied upon) {default=True}
+
+_Return:_ **{Boolean}** - status of action
 
 ---

@@ -166,16 +166,16 @@ class WallhavenApiV1:
                 Purity.nsfw in purities)
 
         if sorting is not None:
-            params["sorting"] = sorting
+            params["sorting"] = sorting.value
 
         if order is not None:
-            params["order"] = order
+            params["order"] = order.value
 
         if topRange is not None:
-            params["topRange"] = topRange
+            params["topRange"] = topRange.value
 
         if atleast is not None:
-            params["atleast"] = atleast
+            params["atleast"] = "{}x{}".format(atleast[0], atleast[1])
 
         if resolutions is not None:
             params["resolutions"] = ",".join(["{}x{}".format(x[0], x[1]) \
@@ -186,10 +186,10 @@ class WallhavenApiV1:
                 for x in (ratios if type(ratios) is list else [ratios])])
         
         if colors is not None:
-            params["colors"] = colors
+            params["colors"] = colors.value
 
         if page is not None:
-            params["page"] = page
+            params["page"] = str(page)
 
         return self._request(True, method="get", url=self._url_format("search"), params=params)
 

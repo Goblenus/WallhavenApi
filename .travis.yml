@@ -1,6 +1,5 @@
 language: python
 python:
-  - "3.3"
   - "3.4"
   - "3.5"
 install:
@@ -10,3 +9,6 @@ script: "coverage run --source=WallhavenApi Tests.py"
 after_success:
   - coveralls
   - bash <(curl -s https://codecov.io/bash)
+branches:
+  only:
+  - master

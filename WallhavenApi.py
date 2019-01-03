@@ -1,16 +1,22 @@
 import logging
 import requests
 import os
-
-def purity(sfw=True, sketchy=True, nsfw=False):
-    return "{}{}{}".format(int(sfw), int(sketchy), int(nsfw))
+from enum import Enum
 
 
-def category(general=True, anime=True, people=False):
-    return "{}{}{}".format(int(general), int(anime), int(people))
+class Purity(Enum):
+    sfw = "sfw"
+    sketchy = "sketchy"
+    nsfw = "nsfw"
 
 
-class Sorting:
+class Category(Enum):
+    general = "general"
+    anime = "anime"
+    people = "people"
+
+
+class Sorting(Enum):
     dated_added = "dated_added"
     relevance = "relevance"
     random = "random"
@@ -19,13 +25,13 @@ class Sorting:
     toplist = "toplist"
 
 
-class Order:
+class Order(Enum):
     # desc used by default
     desc = "desc"
     asc = "asc"
 
 
-class TopRange:
+class TopRange(Enum):
     one_day = "1d"
     three_days = "3d"
     one_week = "1w"
@@ -35,23 +41,37 @@ class TopRange:
     one_year = "1y"
 
 
-def resulution(width, height):
-    return "{}x{}".format(width, height)
-
-
-def ratio(width, height):
-    return "{}x{}".format(width, height)
-
-
-def color(red=0, green=0, blue=0):
-    def clamp(x):
-        max(0, min(x, 255))
-    
-    return "{0:02x}{1:02x}{2:02x}".format(clamp(red), clamp(green), clamp(blue))
-
-
-def combine_params(*args):
-    return ",".join(str(x) for x in args)
+class Color(Enum):
+    # Color names from http://chir.ag/projects/name-that-color
+    lonestar = "660000"
+    red_berry = "990000"
+    guardsman_red = "cc0000"
+    persian_red = "cc3333"
+    french_rose = "ea4c88"
+    plum = "993399"
+    royal_purple = "663399"
+    sapphire = "333399"
+    science_blue = "0066cc"
+    pacific_blue = "0099cc"
+    downy = "66cccc"
+    atlantis = "77cc33"
+    limeade = "669900"
+    verdun_green = "336600"
+    verdun_green_2 = "666600"
+    olive = "999900"
+    earls_green = "cccc33"
+    yellow = "ffff00"
+    sunglow = "ffcc33"
+    orange_peel = "ff9900"
+    blaze_orange = "ff6600"
+    tuscany = "cc6633"
+    potters_clay = "996633"
+    nutmeg_wood_finish = "663300"
+    black = "000000"
+    dusty_gray = "999999"
+    silver = "cccccc"
+    white = "ffffff"
+    gun_powder = "424153"
 
 
 class RequestsLimitError(Exception):
@@ -76,29 +96,74 @@ class NoWallpaperError(Exception):
 
 
 class WallhavenApiV1:
-    def __init__(self, api_key=None, verify_connection=False, base_url=None, 
+    def __init__(self, api_key=None, verify_connection=True, base_url="https://wallhaven.cc/api/v1", 
                  timeout=(2,5)):
         self.verify_connection = verify_connection
         self.api_key = api_key
-
-        self.base_url = base_url if base_url is not None else "https://wallhaven.cc/api/v1"
-
+        self.base_url = base_url
         self.timeout = timeout
 
-    def search(self, q=None, category=None, purity=None, sorting=None, order=None, topRange=None, atleast=None, 
+    def _request(self, to_json, **kwargs):
+        if self.api_key is not None:
+            if "params" in kwargs:
+                kwargs["params"]["apikey"] = self.api_key
+            else:
+                kwargs["params"] = {"apikey": self.api_key}
+
+        if "timeout" not in kwargs:
+            kwargs["timeout"] = self.timeout
+
+        if "verify" not in kwargs:
+            kwargs["verify"] = self.verify_connection
+
+        response = requests.request(**kwargs)
+
+        if response.status_code == 429:
+            raise RequestsLimitError
+
+        if response.status_code == 401:
+            raise ApiKeyError
+
+        if response.status_code != 200:
+            raise UnhandledException
+
+        if to_json:
+            try:
+                return response.json()
+            except:
+                raise UnhandledException
+
+        return response
+
+    def _url_format(self, *args):
+        url = self.base_url
+        url += "/" if not url.endswith("/") else ""
+
+        return url + "/".join((str(x) for x in args))
+
+    @staticmethod
+    def _category(general=True, anime=True, people=False):
+        return "{}{}{}".format(int(general), int(anime), int(people))
+
+    @staticmethod
+    def _purity(sfw=True, sketchy=True, nsfw=False):
+        return "{}{}{}".format(int(sfw), int(sketchy), int(nsfw))
+
+    def search(self, q=None, categories=None, purities=None, sorting=None, order=None, topRange=None, atleast=None, 
                resolutions=None, ratios=None, colors=None, page=None):
         params = {}
-        if self.api_key is not None:
-            params["apikey"] = self.api_key
-
         if q is not None:
             params["q"] = q
 
-        if category is not None:
-            params["category"] = category
+        if categories is not None:
+            categories = categories if type(categories) is list else [categories]
+            params["category"] = self._category(Category.general in categories, Category.anime in categories, 
+                Category.people in categories)
 
-        if purity is not None:
-            params["purity"] = purity
+        if purities is not None:
+            purities = purities if type(purities) is list else [purities]
+            params["purity"] = self._purity(Purity.sfw in purities, Purity.sketchy in purities, 
+                Purity.nsfw in purities)
 
         if sorting is not None:
             params["sorting"] = sorting
@@ -113,59 +178,23 @@ class WallhavenApiV1:
             params["atleast"] = atleast
 
         if resolutions is not None:
-            params["resolutions"] = resolutions
+            params["resolutions"] = ",".join(["{}x{}".format(x[0], x[1]) \
+                for x in (resolutions if type(resolutions) is list else [resolutions])])
 
         if ratios is not None:
-            params["ratios"] = ratios
-
+            params["ratios"] = ",".join(["{}x{}".format(x[0], x[1]) \
+                for x in (ratios if type(ratios) is list else [ratios])])
+        
         if colors is not None:
             params["colors"] = colors
 
         if page is not None:
             params["page"] = page
 
-        response = requests.get("{}{}".format(self.base_url, "/search"), params=params, timeout=self.timeout, 
-                                verify=self.verify_connection)
-
-        if response.status_code == 429:
-            raise RequestsLimitError
-
-        if response.status_code == 401:
-            raise ApiKeyError
-
-        if response.status_code != 200:
-            raise UnhandledException
-
-        try:
-            search_data = response.json()
-        except:
-            raise UnhandledException
-
-        return search_data
+        return self._request(True, method="get", url=self._url_format("search"), params=params)
 
     def wallpaper(self, wallpaper_id):
-        params = {}
-        if self.api_key is not None:
-            params["apikey"] = self.api_key
-
-        response = requests.get("{}{}/{}".format(self.base_url, "/w", wallpaper_id), params=params, 
-                                timeout=self.timeout, verify=self.verify_connection)
-
-        if response.status_code == 429:
-            raise RequestsLimitError
-
-        if response.status_code == 401:
-            raise ApiKeyError
-
-        if response.status_code != 200:
-            raise UnhandledException
-
-        try:
-            wallpaper_data = response.json()
-        except:
-            raise UnhandledException
-
-        return wallpaper_data
+        return self._request(True, method="get", url=self._url_format("w", wallpaper_id))
 
     def is_walpaper_exists(self, wallpaper_id):
         return "error" not in self.wallpaper(wallpaper_id)
@@ -192,7 +221,7 @@ class WallhavenApiV1:
             for chunk in wallpaper.iter_content(chunk_size):
                 image_file.write(chunk)
 
-if __name__ == "__main__":
-    wh = WallhavenApiV1(base_url="http://stest39.wallhaven.cc/api/v1")
+        return save_path
 
-    print(wh.search())
+    def tag(self, tag_id):
+        return self._request(True, method="get", url=self._url_format("tag", tag_id))

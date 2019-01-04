@@ -157,8 +157,8 @@ class WallhavenApiV1:
 
         if categories is not None:
             categories = categories if type(categories) is list else [categories]
-            params["category"] = self._category(Category.general in categories, Category.anime in categories, 
-                Category.people in categories)
+            params["categories"] = self._category(Category.general in categories, Category.anime in categories, 
+                                                  Category.people in categories)
 
         if purities is not None:
             purities = purities if type(purities) is list else [purities]

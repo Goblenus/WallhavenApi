@@ -17,7 +17,7 @@ class Category(Enum):
 
 
 class Sorting(Enum):
-    dated_added = "dated_added"
+    date_added = "date_added"
     relevance = "relevance"
     random = "random"
     views = "views"

@@ -149,7 +149,7 @@ class WallhavenApiV1:
     def _purity(sfw=True, sketchy=True, nsfw=False):
         return "{}{}{}".format(int(sfw), int(sketchy), int(nsfw))
 
-    def search(self, q=None, categories=None, purities=None, sorting=None, order=None, topRange=None, atleast=None, 
+    def search(self, q=None, categories=None, purities=None, sorting=None, order=None, top_range=None, atleast=None, 
                resolutions=None, ratios=None, colors=None, page=None):
         params = {}
         if q is not None:
@@ -171,8 +171,8 @@ class WallhavenApiV1:
         if order is not None:
             params["order"] = order.value
 
-        if topRange is not None:
-            params["topRange"] = topRange.value
+        if top_range is not None:
+            params["topRange"] = top_range.value
 
         if atleast is not None:
             params["atleast"] = "{}x{}".format(atleast[0], atleast[1])

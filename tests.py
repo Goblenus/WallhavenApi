@@ -1,5 +1,5 @@
 import unittest
-from WallhavenApi import WallhavenApiV1, Category, Purity, Sorting, Order, TopRange, Color
+from wallhavenapi import WallhavenApiV1, Category, Purity, Sorting, Order, TopRange, Color, Type
 import os
 import datetime
 
@@ -15,9 +15,6 @@ class TestWallhavenApiV1(unittest.TestCase):
 
         self.assertIn("data", search_data)
         self.assertIn("meta", search_data)
-
-    def test_search_q(self):
-        self.assertTrue(True)
 
     def test_search_categories(self):
         for category in list(Category):
@@ -86,10 +83,9 @@ class TestWallhavenApiV1(unittest.TestCase):
     def test_search_sorting_favorites_desc(self):
         self.search_sorting_favorites(Order.desc)
     
-    @unittest.skip("http://stest39.wallhaven.cc/forums/thread/13")
     def test_search_top_range(self):
         for top_range in list(TopRange):
-            search_data = self.wallhaven_api.search(top_range=top_range)
+            search_data = self.wallhaven_api.search(top_range=top_range, sorting=Sorting.toplist)
             self.assertIn("data", search_data)
 
             if str(top_range.value[-1]).endswith("d"):
@@ -127,6 +123,7 @@ class TestWallhavenApiV1(unittest.TestCase):
         for color in list(Color):
             search_data = self.wallhaven_api.search(colors=color)
             for wallpaper in search_data["data"]:
+                self.assertIn("colors", wallpaper)
                 self.assertIn("#{}".format(color.value), wallpaper["colors"])
 
     def test_search_page(self):
@@ -175,6 +172,72 @@ class TestWallhavenApiV1(unittest.TestCase):
             
             break
 
+    def test_search_query_uploader(self):
+        search_data = self.wallhaven_api.search()
+
+        self.assertIn("data", search_data)
+
+        if not len(search_data["data"]):
+            return None
+
+        wallpaper = self.wallhaven_api.wallpaper(search_data["data"][0]["id"])
+
+        self.assertIn("data", wallpaper)
+        self.assertIn("uploader", wallpaper["data"])
+        self.assertIn("username", wallpaper["data"]["uploader"])
+        
+        search_data = self.wallhaven_api.search(q="@{}".format(wallpaper["data"]["uploader"]["username"]))
+
+        self.assertIn("data", search_data)
+
+        self.assertGreater(len(search_data["data"]), 0)
+
+    def test_search_query_id(self):
+        search_data = self.wallhaven_api.search()
+
+        for wallpaper_temp in search_data["data"]:
+            self.assertIn("id", wallpaper_temp)
+            wallpaper = self.wallhaven_api.wallpaper(wallpaper_temp["id"])
+            self.assertIn("data", wallpaper)
+            self.assertIn("tags", wallpaper["data"])
+
+            if not len(wallpaper["data"]["tags"]):
+                continue
+
+            for tag_temp in wallpaper["data"]["tags"]:
+                self.assertIn("id", tag_temp)
+
+            search_data = self.wallhaven_api.search(q="id:{}".format(wallpaper["data"]["tags"][0]['id']))
+            
+            self.assertIn("data", search_data)
+            self.assertGreater(len(search_data["data"]), 0)
+            break
+
+    def test_search_query_like(self):
+        search_data = self.wallhaven_api.search()
+
+        if not len(search_data):
+            return
+
+        search_data = self.wallhaven_api.search(q="like:{}".format(search_data["data"][0]['id']))
+            
+        self.assertIn("data", search_data)
+        self.assertIn("meta", search_data)
+
+    def test_search_query_type(self):
+        for image_type in Type:
+            search_data = self.wallhaven_api.search(q="type:{}".format(image_type.value))
+            
+            self.assertIn("data", search_data)
+            self.assertIn("meta", search_data)
+
+            for wallpaper in search_data["data"]:
+                self.assertIn("file_type", wallpaper)
+                if image_type in [Type.jpeg, Type.jpg]:
+                    self.assertTrue(str(wallpaper["file_type"]).endswith(Type.jpeg.value) \
+                                    or str(wallpaper["file_type"]).endswith(Type.jpg.value))
+                else:
+                    self.assertTrue(str(wallpaper["file_type"]).endswith(image_type.value))
 
 if __name__ == '__main__':
     unittest.main()

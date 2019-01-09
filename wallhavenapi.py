@@ -74,6 +74,12 @@ class Color(Enum):
     gun_powder = "424153"
 
 
+class Type(Enum):
+    jpeg = "jpeg"
+    jpg = "jpg" # the same as jpeg
+    png = "png"
+
+
 class RequestsLimitError(Exception):
     def __init__(self):
         super().__init__("You have exceeded requests limit. Please try later.")

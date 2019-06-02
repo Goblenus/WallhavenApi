@@ -8,7 +8,7 @@ class TestWallhavenApiV1(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.wallhaven_api = WallhavenApiV1(api_key=os.getenv('APIKEY', None), verify_connection=False, 
-                                            base_url="http://stest39.wallhaven.cc/api/v1")
+                                            base_url="http://wallhaven.cc/api/v1")
     
     def test_search(self):
         search_data = self.wallhaven_api.search()

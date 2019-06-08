@@ -1,11 +1,11 @@
 stages:
   - Test
 
-Configure servers:
+Tests:
   stage: Test
   tags:
     - docker
-  image: ubuntu:latest
+  image: python:latest
   before_script:
     - pip install -r requirements.txt
     - pip install coveralls

@@ -1,0 +1,16 @@
+stages:
+  - Test
+
+Configure servers:
+  stage: Test
+  tags:
+    - docker
+  image: ubuntu:latest
+  before_script:
+    - pip install -r requirements.txt
+    - pip install coveralls
+  script:
+    - coverage run --include=wallhavenapi.py tests.py
+    - coveralls
+  only: 
+    - master

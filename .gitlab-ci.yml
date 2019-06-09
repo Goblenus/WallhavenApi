@@ -12,5 +12,6 @@ Tests:
   script:
     - coverage run --include=wallhavenapi.py tests.py
     - coveralls
+    - bash <(curl -s https://codecov.io/bash)
   only: 
     - master

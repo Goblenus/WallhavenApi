@@ -64,6 +64,10 @@ wallhaven_api = wallhavenapi.WallhavenApiV1(api_key="some_api_key")
 * file_path {String} - path to file
 * chunk_size {Int} - chunked buffer for downloading
 
-### WallhavenApiV1.tag
+### WallhavenApiV1.tag - Get tag information
 
 * tag_id {String} - tag id (can be obtained by WallhavenApiV1.search)
+
+### WallhavenApiV1.settings - Get user settings
+
+It works only if api_key is set

@@ -231,3 +231,6 @@ class WallhavenApiV1:
 
     def tag(self, tag_id):
         return self._request(True, method="get", url=self._url_format("tag", tag_id))
+
+    def settings(self):
+        return None if self.api_key is None else self._request(True, method="get", url=self._url_format("settings"))

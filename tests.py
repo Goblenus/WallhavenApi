@@ -240,6 +240,12 @@ class TestWallhavenApiV1(unittest.TestCase):
                                     or str(wallpaper["file_type"]).endswith(Type.jpg.value))
                 else:
                     self.assertTrue(str(wallpaper["file_type"]).endswith(image_type.value))
+    
+    def test_setiings(self):
+        result = self.wallhaven_api.settings()
+
+        assert result is None if self.wallhaven_api.api_key is None else result is not None
+
 
 if __name__ == '__main__':
     unittest.main()

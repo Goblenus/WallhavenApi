@@ -58,7 +58,7 @@ wallhaven_api = wallhavenapi.WallhavenApiV1(api_key="some_api_key")
 
 * wallpaper_id {String} - wallpaper id (can be obtained by WallhavenApiV1.search)
 
-### WallhavenApiV1.download_walpaper - Download wallpaper to file by id
+### WallhavenApiV1.download_wallpaper - Download wallpaper to file (or get data) by id
 
 * wallpaper_id {String} - wallpaper id (WallhavenApiV1.search)
 * file_path {String} - path to file
@@ -69,5 +69,19 @@ wallhaven_api = wallhavenapi.WallhavenApiV1(api_key="some_api_key")
 * tag_id {String} - tag id (can be obtained by WallhavenApiV1.search)
 
 ### WallhavenApiV1.settings - Get user settings
+
+It works only if api_key is set
+
+### WallhavenApiV1.collections - get collections by user name
+
+* user_name {String} - user name
+
+### WallhavenApiV1.collection_wallpapers - get wallpapers by user collection id
+
+* user_name {String} - user name
+* collection_id {Int} - user collection id (can obtained by `WallhavenApiV1.collections`)
+* page {Int} - page
+
+### WallhavenApiV1.my_collections - get collections of api_key user
 
 It works only if api_key is set

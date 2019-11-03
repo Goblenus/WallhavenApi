@@ -2,6 +2,8 @@ import logging
 import requests
 import os
 from enum import Enum
+import random
+import string
 
 
 class Purity(Enum):
@@ -80,6 +82,13 @@ class Type(Enum):
     png = "png"
 
 
+class Seed(object):
+    @staticmethod
+    def generate():
+        # [a-zA-Z0-9]{6}
+        return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(6))
+
+
 class RequestsLimitError(Exception):
     def __init__(self):
         super().__init__("You have exceeded requests limit. Please try later.")
@@ -156,7 +165,7 @@ class WallhavenApiV1:
         return "{}{}{}".format(int(sfw), int(sketchy), int(nsfw))
 
     def search(self, q=None, categories=None, purities=None, sorting=None, order=None, top_range=None, atleast=None, 
-               resolutions=None, ratios=None, colors=None, page=None):
+               resolutions=None, ratios=None, colors=None, page=None, seed=None):
         params = {}
         if q is not None:
             params["q"] = q
@@ -197,6 +206,9 @@ class WallhavenApiV1:
         if page is not None:
             params["page"] = str(page)
 
+        if seed is not None:
+            params["seed"] = seed
+
         return self._request(True, method="get", url=self._url_format("search"), params=params)
 
     def wallpaper(self, wallpaper_id):
@@ -205,7 +217,11 @@ class WallhavenApiV1:
     def is_walpaper_exists(self, wallpaper_id):
         return "error" not in self.wallpaper(wallpaper_id)
 
-    def download_walpaper(self, wallpaper_id, file_path, chunk_size=4096):
+    def download_walpaper(self, *args, **kwargs):
+        logging.warning('Please use "download_wallpaper" method instead "download_walpaper"')
+        return self.download_wallpaper(*args, **kwargs)
+
+    def download_wallpaper(self, wallpaper_id, file_path, chunk_size=4096):
         wallpaper_data = self.wallpaper(wallpaper_id)
 
         if "error" in wallpaper_data:
@@ -217,20 +233,33 @@ class WallhavenApiV1:
         if wallpaper.status_code != 200:
             raise UnhandledException
 
-        save_path = os.path.abspath(file_path)
-        save_directory_path = os.path.dirname(save_path)
+        if file_path is not None:
+            save_path = os.path.abspath(file_path)
+            save_directory_path = os.path.dirname(save_path)
 
-        if not os.path.exists(save_directory_path):
-            os.makedirs(save_directory_path)
+            if not os.path.exists(save_directory_path):
+                os.makedirs(save_directory_path)
 
-        with open(save_path, "wb") as image_file:
-            for chunk in wallpaper.iter_content(chunk_size):
-                image_file.write(chunk)
+            with open(save_path, "wb") as image_file:
+                for chunk in wallpaper.iter_content(chunk_size):
+                    image_file.write(chunk)
 
-        return save_path
+            return save_path
+        
+        return wallpaper.content
 
     def tag(self, tag_id):
         return self._request(True, method="get", url=self._url_format("tag", tag_id))
 
     def settings(self):
         return None if self.api_key is None else self._request(True, method="get", url=self._url_format("settings"))
+
+    def collections(self, user_name):
+        return self._request(True, method="get", url=self._url_format(f"collections/{user_name}"))
+
+    def collection_wallpapers(self, user_name, collection_id, page=None):
+        return self._request(True, method="get", url=self._url_format(f"collections/{user_name}/{collection_id}"), 
+            params={"page": str(page)} if page is not None else {})
+
+    def my_collections(self):
+        return None if self.api_key is None else self._request(True, method="get", url=self._url_format(f"collections"))

@@ -1,7 +1,21 @@
 import unittest
-from wallhavenapi import WallhavenApiV1, Category, Purity, Sorting, Order, TopRange, Color, Type
+from wallhavenapi import WallhavenApiV1, Category, Purity, Sorting, Order, TopRange, Color, Type, RequestsLimitError
 import os
 import datetime
+import time
+
+
+def request_limit_decorator(test_method):
+    def wrapper(self, *args, **kwargs):
+        for _ in range(5):
+            try:
+                result = test_method(self, *args, **kwargs)
+                break
+            except RequestsLimitError:
+                time.sleep(10)
+                
+        return result
+    return wrapper
 
 
 class TestWallhavenApiV1(unittest.TestCase):
@@ -16,6 +30,7 @@ class TestWallhavenApiV1(unittest.TestCase):
         self.assertIn("data", search_data)
         self.assertIn("meta", search_data)
 
+    @request_limit_decorator
     def test_search_categories(self):
         for category in list(Category):
             search_data = self.wallhaven_api.search(categories=category)
@@ -23,6 +38,7 @@ class TestWallhavenApiV1(unittest.TestCase):
             for wallpaper_data in search_data["data"]:
                 self.assertEqual(category.value, wallpaper_data["category"])
 
+    @request_limit_decorator
     def test_search_purities(self):
         for purity in list(Purity):
             search_data = self.wallhaven_api.search(purities=purity)
@@ -30,6 +46,7 @@ class TestWallhavenApiV1(unittest.TestCase):
             for wallpaper_data in search_data["data"]:
                 self.assertEqual(purity.value, wallpaper_data["purity"])
 
+    @request_limit_decorator
     def test_search_sorting(self):
         for sorting_method in list(Sorting):
             search_data = self.wallhaven_api.search(sorting=sorting_method)
@@ -47,12 +64,15 @@ class TestWallhavenApiV1(unittest.TestCase):
             self.assertGreaterEqual(datetime_1, datetime_2) \
             if order == Order.desc else self.assertLessEqual(datetime_1, datetime_2)
 
+    @request_limit_decorator
     def test_search_sorting_dated_added_asc(self):
         self.search_sorting_dated_added(Order.asc)
 
+    @request_limit_decorator
     def test_search_sorting_dated_added_desc(self):
         self.search_sorting_dated_added(Order.desc)
 
+    @request_limit_decorator
     def search_sorting_views(self, order):
         search_data = self.wallhaven_api.search(sorting=Sorting.views, order=order)
         for i in range(len(search_data["data"]) - 1):
@@ -61,10 +81,12 @@ class TestWallhavenApiV1(unittest.TestCase):
             self.assertGreaterEqual(views_1, views_2) \
             if order == Order.desc else self.assertLessEqual(views_1, views_2)
 
+    @request_limit_decorator
     @unittest.skip("May content unsorted results. Need help")
     def test_search_sorting_views_asc(self):
         self.search_sorting_views(Order.asc)
 
+    @request_limit_decorator
     @unittest.skip("May content unsorted results. Need help")
     def test_search_sorting_views_desc(self):
         self.search_sorting_views(Order.desc)
@@ -77,14 +99,17 @@ class TestWallhavenApiV1(unittest.TestCase):
             self.assertGreaterEqual(favorites_1, favorites_2) \
             if order == Order.desc else self.assertLessEqual(favorites_1, favorites_2)
 
+    @request_limit_decorator
     @unittest.skip("May content unsorted results. Need help")
     def test_search_sorting_favorites_asc(self):
         self.search_sorting_favorites(Order.asc)
 
+    @request_limit_decorator
     @unittest.skip("May content unsorted results. Need help")
     def test_search_sorting_favorites_desc(self):
         self.search_sorting_favorites(Order.desc)
-    
+
+    @request_limit_decorator
     @unittest.skip("May content unsorted results. Need help")
     def test_search_top_range(self):
         for top_range in list(TopRange):
@@ -105,23 +130,27 @@ class TestWallhavenApiV1(unittest.TestCase):
 
                 self.assertGreaterEqual(created_at, datetime.datetime.now() - timedelta)
     
+    @request_limit_decorator
     def test_search_atleast(self):
         search_data = self.wallhaven_api.search(atleast=(1920, 1080))
         for wallpaper in search_data["data"]:
             self.assertGreaterEqual(int(wallpaper["dimension_x"]), 1920)
             self.assertGreaterEqual(int(wallpaper["dimension_y"]), 1080)
 
+    @request_limit_decorator
     def test_search_resolutions(self):
         search_data = self.wallhaven_api.search(resolutions=(1920, 1080))
         for wallpaper in search_data["data"]:
             self.assertEqual(int(wallpaper["dimension_x"]), 1920)
             self.assertEqual(int(wallpaper["dimension_y"]), 1080)
 
+    @request_limit_decorator
     def test_search_ratios(self):
         search_data = self.wallhaven_api.search(ratios=(16, 10))
         for wallpaper in search_data["data"]:
             self.assertEqual(float(wallpaper["ratio"]), 1.6)
 
+    @request_limit_decorator
     def test_search_colors(self):
         for color in list(Color):
             search_data = self.wallhaven_api.search(colors=color)
@@ -129,6 +158,7 @@ class TestWallhavenApiV1(unittest.TestCase):
                 self.assertIn("colors", wallpaper)
                 self.assertIn("#{}".format(color.value), wallpaper["colors"])
 
+    @request_limit_decorator
     def test_search_page(self):
         search_data = self.wallhaven_api.search()
 
@@ -142,6 +172,7 @@ class TestWallhavenApiV1(unittest.TestCase):
             self.assertIn("current_page", search_data["meta"])
             self.assertEqual(2, int(search_data["meta"]["current_page"]))
 
+    @request_limit_decorator
     def test_wallpaper(self):
         search_data = self.wallhaven_api.search()
 
@@ -154,6 +185,7 @@ class TestWallhavenApiV1(unittest.TestCase):
         wallpaper = self.wallhaven_api.wallpaper(search_data["data"][0]["id"])
         self.assertIn("data", wallpaper)
 
+    @request_limit_decorator
     def test_tag(self):
         search_data = self.wallhaven_api.search()
 
@@ -174,7 +206,8 @@ class TestWallhavenApiV1(unittest.TestCase):
             self.assertIn("data", tag)
             
             break
-
+    
+    @request_limit_decorator
     def test_search_query_uploader(self):
         search_data = self.wallhaven_api.search()
 
@@ -195,6 +228,7 @@ class TestWallhavenApiV1(unittest.TestCase):
 
         self.assertGreater(len(search_data["data"]), 0)
 
+    @request_limit_decorator
     def test_search_query_id(self):
         search_data = self.wallhaven_api.search()
 
@@ -216,6 +250,7 @@ class TestWallhavenApiV1(unittest.TestCase):
             self.assertGreater(len(search_data["data"]), 0)
             break
 
+    @request_limit_decorator
     def test_search_query_like(self):
         search_data = self.wallhaven_api.search()
 
@@ -227,6 +262,7 @@ class TestWallhavenApiV1(unittest.TestCase):
         self.assertIn("data", search_data)
         self.assertIn("meta", search_data)
 
+    @request_limit_decorator
     def test_search_query_type(self):
         for image_type in Type:
             search_data = self.wallhaven_api.search(q="type:{}".format(image_type.value))
@@ -242,10 +278,43 @@ class TestWallhavenApiV1(unittest.TestCase):
                 else:
                     self.assertTrue(str(wallpaper["file_type"]).endswith(image_type.value))
     
-    def test_setiings(self):
+    @request_limit_decorator
+    def test_settings(self):
         result = self.wallhaven_api.settings()
 
         assert result is None if self.wallhaven_api.api_key is None else result is not None
+
+    @request_limit_decorator
+    def test_collections(self):
+                                                # Just a random user, who has a collection with wallpapers
+        result = self.wallhaven_api.collections("ThorRagnarok")
+
+        assert "data" in result
+        assert len(result["data"])
+        assert "id" in result["data"][0]
+
+        return result
+
+    @request_limit_decorator
+    def test_collection_wallpapers(self, page=None):
+        collections = self.test_collections()
+
+        collections_wallpapers = self.wallhaven_api.collection_wallpapers("ThorRagnarok", 
+            collections["data"][0]["id"], page=page)
+
+        assert "data" in collections_wallpapers
+        assert "meta" in collections_wallpapers
+        assert len(collections_wallpapers["data"])
+
+    @request_limit_decorator
+    def test_collection_wallpapers_page(self):
+        self.test_collection_wallpapers(2)
+
+    @request_limit_decorator
+    def test_my_collections(self):
+        result = self.wallhaven_api.my_collections()
+
+        assert "data" in result
 
 
 if __name__ == '__main__':

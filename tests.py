@@ -13,6 +13,8 @@ def request_limit_decorator(test_method):
                 break
             except RequestsLimitError:
                 time.sleep(10)
+        else:
+            raise RequestsLimitError()
                 
         return result
     return wrapper

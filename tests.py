@@ -7,12 +7,12 @@ import time
 
 def request_limit_decorator(test_method):
     def wrapper(self, *args, **kwargs):
-        for _ in range(5):
+        for _ in range(20):
             try:
                 result = test_method(self, *args, **kwargs)
                 break
             except RequestsLimitError:
-                time.sleep(10)
+                time.sleep(5)
         else:
             raise RequestsLimitError()
                 

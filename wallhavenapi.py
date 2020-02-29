@@ -4,6 +4,7 @@ import os
 from enum import Enum
 import random
 import string
+import time
 
 
 class Purity(Enum):
@@ -112,43 +113,50 @@ class NoWallpaperError(Exception):
 
 class WallhavenApiV1:
     def __init__(self, api_key=None, verify_connection=True, base_url="https://wallhaven.cc/api/v1", 
-                 timeout=(2,5)):
+                 timeout=(2,5), requestslimit_timeout=None):
         self.verify_connection = verify_connection
         self.api_key = api_key
         self.base_url = base_url
         self.timeout = timeout
+        self.requestslimit_timeout = requestslimit_timeout
 
     def _request(self, to_json, **kwargs):
-        if self.api_key is not None:
-            if "params" in kwargs:
-                kwargs["params"]["apikey"] = self.api_key
-            else:
-                kwargs["params"] = {"apikey": self.api_key}
+        for i in range(self.requestslimit_timeout[0] if self.requestslimit_timeout is not None else 1):
+            if self.api_key is not None:
+                if "params" in kwargs:
+                    kwargs["params"]["apikey"] = self.api_key
+                else:
+                    kwargs["params"] = {"apikey": self.api_key}
 
-        if "timeout" not in kwargs:
-            kwargs["timeout"] = self.timeout
+            if "timeout" not in kwargs:
+                kwargs["timeout"] = self.timeout
 
-        if "verify" not in kwargs:
-            kwargs["verify"] = self.verify_connection
+            if "verify" not in kwargs:
+                kwargs["verify"] = self.verify_connection
 
-        response = requests.request(**kwargs)
+            response = requests.request(**kwargs)
 
-        if response.status_code == 429:
-            raise RequestsLimitError
+            if response.status_code == 429:
+                if self.requestslimit_timeout is None\
+                    or i == (self.requestslimit_timeout[0] - 1) if self.requestslimit_timeout is not None else 0:
+                    raise RequestsLimitError
+                
+                time.sleep(self.requestslimit_timeout[1])
+                continue
 
-        if response.status_code == 401:
-            raise ApiKeyError
+            if response.status_code == 401:
+                raise ApiKeyError
 
-        if response.status_code != 200:
-            raise UnhandledException
-
-        if to_json:
-            try:
-                return response.json()
-            except:
+            if response.status_code != 200:
                 raise UnhandledException
 
-        return response
+            if to_json:
+                try:
+                    return response.json()
+                except:
+                    raise UnhandledException
+
+            return response
 
     def _url_format(self, *args):
         url = self.base_url

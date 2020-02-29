@@ -40,6 +40,14 @@ wallhaven_api = wallhavenapi.WallhavenApiV1(api_key="some_api_key")
 
 ## Methods
 
+### WallhavenApiV1
+
+* api_key {String} - your **[Wallhaven](https://wallhaven.cc)** [api key](https://wallhaven.cc/settings/account)
+* verify_connection {Bool} - check ssl cert
+* base_url {String} - **[Wallhaven](https://wallhaven.cc)** base api url
+* timeout {Tuple(Int, Int)} - http request timeout
+* requestslimit_timeout {Tuple(Int, Int)} - try to handle 429 http error. The first Int - how many times to do request, the second - delay (in seconds) between requests.
+
 ### WallhavenApiV1.search - Accessing Wallpaper information
 
 * q {String} - query (used to filter by user, tags, ids and [so on...](https://wallhaven.cc/help/api#search))

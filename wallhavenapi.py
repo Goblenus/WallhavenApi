@@ -113,7 +113,7 @@ class NoWallpaperError(Exception):
 
 class WallhavenApiV1:
     def __init__(self, api_key=None, verify_connection=True, base_url="https://wallhaven.cc/api/v1", 
-                 timeout=(2,5), requestslimit_timeout=None,proxies={}):
+                 timeout=(2,5), requestslimit_timeout=None, proxies={}):
         self.verify_connection = verify_connection
         self.api_key = api_key
         self.base_url = base_url

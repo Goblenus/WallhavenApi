@@ -47,20 +47,26 @@ wallhaven_api = wallhavenapi.WallhavenApiV1(api_key="some_api_key")
 * base_url {String} - **[Wallhaven](https://wallhaven.cc)** base api url
 * timeout {Tuple(Int, Int)} - http request timeout
 * requestslimit_timeout {Tuple(Int, Int)} - try to handle 429 http error. The first Int - how many times to do request, the second - delay (in seconds) between requests.
+* proxies {Dict} - proxy servers for HTTP requests
 
 ### WallhavenApiV1.search - Accessing Wallpaper information
 
 * q {String} - query (used to filter by user, tags, ids and [so on...](https://wallhaven.cc/help/api#search))
 * categories {String|List[String]} - walpaper category (located in wallhavenapi.Category)
 * purities {String|List[String]} - walpaper purity (located in wallhavenapi.Purity)
-* sorting {String} - how to sort results (located in wallhavenapi.Sorting)
-* order {String} - sort order (located in wallhavenapi.Order)
-* top_range {String} - sorting MUST be set to 'toplist' (located in wallhavenapi.TopRange)
-* atleast {Typle(Int,Int)} - minimum resolution
-* resolutions {Typle(Int,Int)|List[Typle(Int,Int)]} - exact wallpaper resolutions
-* ratios {Typle(Int,Int)|List[Typle(Int,Int)]} - aspect ratios
-* colors {String} - color to search (located in wallhavenapi.Color)
+* sorting {Enum} - how to sort results (located in wallhavenapi.Sorting)
+* order {Enum} - sort order (located in wallhavenapi.Order)
+* top_range {Enum} - sorting MUST be set to 'toplist' (located in wallhavenapi.TopRange)
+* atleast {Tuple(Int,Int)} - minimum resolution
+* resolutions {Tuple(Int,Int)|List[Tuple(Int,Int)]} - exact wallpaper resolutions
+* ratios {Tuple(Int,Int)|List[Tuple(Int,Int)]} - aspect ratios
+* colors {Enum} - color to search (located in wallhavenapi.Color)
 * page {Int} - page for pagination
+* seed {String} - seed for random sorting (6 alphanumeric characters, or use Seed.generate())
+
+### WallhavenApiV1.wallpaper - Get wallpaper information by id
+
+* wallpaper_id {String} - wallpaper id (can be obtained by WallhavenApiV1.search)
 
 ### WallhavenApiV1.is_walpaper_exists - Check wallpaper existence by id
 
@@ -68,8 +74,8 @@ wallhaven_api = wallhavenapi.WallhavenApiV1(api_key="some_api_key")
 
 ### WallhavenApiV1.download_wallpaper - Download wallpaper to file (or get data) by id
 
-* wallpaper_id {String} - wallpaper id (WallhavenApiV1.search)
-* file_path {String} - path to file
+* wallpaper_id {String} - wallpaper id (can be obtained by WallhavenApiV1.search)
+* file_path {String|None} - path to file. If None, returns raw bytes instead
 * chunk_size {Int} - chunked buffer for downloading
 
 ### WallhavenApiV1.tag - Get tag information
@@ -93,3 +99,28 @@ It works only if api_key is set
 ### WallhavenApiV1.my_collections - get collections of api_key user
 
 It works only if api_key is set
+
+## Exceptions
+
+* RequestsLimitError - raised when 429 rate limit is exceeded and retries are exhausted
+* ApiKeyError - raised when 401 unauthorized response is received (invalid API key)
+* UnhandledException - raised for unexpected HTTP errors or JSON parsing failures
+* NoWallpaperError - raised when requested wallpaper does not exist
+
+## Enums
+
+### Type
+
+* jpeg - JPEG format
+* jpg - JPEG format (alias for jpeg)
+* png - PNG format
+
+### Seed
+
+Static class to generate random seeds for random sorting:
+
+```python
+from wallhavenapi import Seed
+
+seed = Seed.generate()  # Returns a random 6-character alphanumeric string
+```
